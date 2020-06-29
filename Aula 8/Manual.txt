@@ -1,0 +1,35 @@
+Manual:
+
+    Operações: 
+        
+        x + y -> soma
+
+        x - y -> subtração
+
+        x * y -> multiplicação
+
+        x / y -> divisão
+
+        sqrt(x) -> raiz quadrada
+
+        sin(x) -> seno
+
+        exp(x) -> exponencial
+
+        log(x) -> logaritmo
+
+        x ^ y -> exponencial
+
+        a = b -> atribui o valor b a uma variável 'a'
+
+        pi -> número pi
+
+        ans -> último resultado
+
+        # ... -> comentários
+
+    Notas:
+
+        podemos colocar parênteses '(' ')' nas expressões
+
+        não podemos colocar comentários na primeira linha de execução

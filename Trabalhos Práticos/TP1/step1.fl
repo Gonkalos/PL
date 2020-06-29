@@ -1,0 +1,154 @@
+%{
+    #include<string.h>
+    #include<glib.h>
+    #include<time.h>
+
+    typedef struct comment
+    {
+        GString* id;
+        GString* user;
+        GString* date;
+        gint timestamp;
+        GString* commentText;
+        gboolean hasReplies;
+        gint numberOfReplies;
+        GArray* replies;
+    }* Comment; 
+
+    GArray* commentThread;
+
+%}
+
+
+%option noyywrap yylineno
+
+%x TEXT
+
+%{
+    void insertCommentReply(Comment comment, gboolean isReply);
+    gint dateToTimestamp(char* date);
+%}
+
+%%      
+                                                Comment c; gboolean isReply = FALSE;
+
+\<form                                          isReply = FALSE;
+
+\-t\"\ id=\"[a-z0-9]{6}                         c = g_new(struct comment,1); insertCommentReply(c, isReply); c->hasReplies = FALSE; c->id = g_string_new(yytext+8);
+
+rel=\"nofollow\">.*/\ \<\/a\>                   c->user = g_string_new(yytext+15);
+[ ]+Conta.*/\r                                  c->user = g_string_new(yytext+16);
+
+permalink\">[0-9 .:]+                           c->date = g_string_new(yytext+11);
+
+datetime=\"[0-9\-T:.]+/\"\>                     c->timestamp = dateToTimestamp(yytext+10);
+
+\<p\>\r\n\ *                                    BEGIN TEXT; c->commentText = g_string_new("");
+<TEXT>\n+\ *\<\/p>                              BEGIN 0; isReply = TRUE;
+<TEXT>.|\n                                      {}  
+<TEXT>.+/\r                                     g_string_append(c->commentText, yytext);           
+
+.|\n                                            {}
+
+%%
+
+void insertCommentReply(Comment comment, gboolean isReply){
+    if(isReply == FALSE){
+        comment->numberOfReplies = 0;
+        g_array_append_val(commentThread,comment);
+    } else {
+        Comment c = g_array_index(commentThread,Comment,(commentThread->len)-1);
+        if(c->hasReplies == FALSE){
+            c->replies = g_array_new(FALSE,FALSE,sizeof(Comment));
+        }
+        g_array_append_val(c->replies,comment);
+        c->hasReplies = TRUE;
+        c->numberOfReplies++;
+    }
+}
+
+gint dateToTimestamp(char* date){
+    struct tm time;
+    strptime(date, "%Y-%m-%dT%H:%M:%S", &time);
+    time_t loctime = mktime(&time);
+    gint resultado = (gint)loctime;
+    return resultado;
+}
+
+
+void printReply(Comment comment){
+    fprintf(yyout, "\t\t{\n");
+    fprintf(yyout, "\t\t  \"id\": \"%s\",\n", comment->id->str);
+    fprintf(yyout, "\t\t  \"user\": \"%s\",\n",comment->user->str);
+    fprintf(yyout, "\t\t  \"date\": \"%s\",\n",comment->date->str);
+    fprintf(yyout, "\t\t  \"timestamp\": %d,\n", comment->timestamp);
+    fprintf(yyout, "\t\t  \"commentText\": \"%s\",\n", comment->commentText->str);
+    fprintf(yyout, "\t\t  \"likes\": %d,\n", 0);
+    fprintf(yyout, "\t\t  \"hasReplies\": ");
+    if(comment->hasReplies == TRUE){
+        fprintf(yyout, "TRUE,\n");
+    } else {
+        fprintf(yyout, "FALSE,\n");
+    }
+    fprintf(yyout, "\t\t  \"numberOfReplies\": %d \n\n", comment->numberOfReplies);
+    fprintf(yyout, "\t\t  \"replies\": [ ]\n");
+    fprintf(yyout, "\t\t}");
+}
+
+void printComment(Comment comment){
+    fprintf(yyout, "\t{\n");
+    fprintf(yyout, "\t  \"id\": \"%s\",\n", comment->id->str);
+    fprintf(yyout, "\t  \"user\": \"%s\",\n",comment->user->str);
+    fprintf(yyout, "\t  \"date\": \"%s\",\n",comment->date->str);
+    fprintf(yyout, "\t  \"timestamp\": %d,\n", comment->timestamp);
+    fprintf(yyout, "\t  \"commentText\": \"%s\",\n", comment->commentText->str);
+    fprintf(yyout, "\t  \"likes\": %d,\n", 0);
+    fprintf(yyout, "\t  \"hasReplies\": ");
+    if(comment->hasReplies == TRUE){
+        fprintf(yyout, "TRUE,\n");
+    } else {
+        fprintf(yyout, "FALSE,\n");
+    }
+    fprintf(yyout, "\t  \"numberOfReplies\": %d \n\n", comment->numberOfReplies);
+    fprintf(yyout, "\t  \"replies\": ");
+    if(comment->hasReplies == TRUE){
+        Comment c;
+        fprintf(yyout, "[\n");
+        for(int i = 0; i < comment->numberOfReplies ; i++){
+            c = g_array_index(comment->replies,Comment,i);
+            printReply(c);
+            if(i != comment->numberOfReplies-1){
+                fprintf(yyout, ",\n");
+            }
+        }
+        fprintf(yyout, "\n\t]");
+    }else{
+        fprintf(yyout, "[ ]\n");
+    }
+    fprintf(yyout, "\n\t}");
+}
+
+
+void printCommentThread(){
+    Comment c;
+    fprintf(yyout, "%s", "\"CommentThread:\" : [\n");
+    for(gint i = 0 ; i < commentThread->len ; i++){
+         c = g_array_index(commentThread,Comment,i);
+         printComment(c);
+         if(i != commentThread->len-1){
+            fprintf(yyout, "%s", ",\n");
+         }
+    } 
+    fprintf(yyout, "%s", "\n]");
+}
+
+int main(int argc, char* argv[]){
+    yyin=fopen("publico-utf8.html","r");
+    yyout=fopen("file1.txt","w");
+    commentThread = g_array_new(FALSE,FALSE,sizeof(Comment));
+    yylex();
+    printCommentThread();
+    fflush(yyout);
+    system("flex -o step2.c step2.fl; gcc step2.c; ./a.out");
+    return 0;
+}

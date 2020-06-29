@@ -1,0 +1,38 @@
+%{
+	#include "y.tab.h"
+	void yyerror(char* s);
+%}
+
+%option noyywrap yylineno
+%x texto entreMM
+
+ASPAS (["][^"\n]*["]|['][^'\n]*['])
+
+%%
+
+<*>[<]                      BEGIN entreMM; return yytext[0];
+<*>[>]                      BEGIN texto; return yytext[0];
+
+<*>\<\/                     BEGIN entreMM; return bf;
+
+<entreMM>{
+
+[ \t\n]                     {} // para espaços finais
+[a-zA-Z:\- 0-9]+            yylval.s = strdup(yytext); return id;
+{ASPAS}                     yylval.s = strdup(yytext); return str;
+[=]                         return yytext[0];
+
+}
+
+<texto>{
+
+[^<>]+/\<                   yylval.s = strdup(yytext); return txt;
+[ \t\n]+                    {} // para espaços finais
+[^<>]+					    yylval.s = strdup(yytext); return txt; // para txt final
+\<!--.*--\>				    {} // comentários
+
+}
+
+<*>.						yyerror("Símbolo desconhecido");
+
+%%

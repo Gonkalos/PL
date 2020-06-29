@@ -1,0 +1,25 @@
+%{
+	#include<math.h>
+	#include "y.tab.h"
+	void yyerror(char* s);
+%}
+
+%option noyywrap yylineno
+
+%%
+
+\"[^"]*\"               { yylval.s = strdup(yytext); return STR; }
+[0-9]+(\.[0-9]+)?       { yylval.n = atof(yytext); return NUM; }
+pi 						{ yylval.n = M_PI; return NUM; }
+sqrt                    { yylval.f = sqrt; return FUN1; }
+sin                     { yylval.f = sin; return FUN1; }
+exp                     { yylval.f = exp; return FUN1; }
+log                     { yylval.f = log; return FUN1; }
+ans                     { return ANS; }
+[a-zA-Z]                { yylval.v = yytext[0]; return VAR; }
+[ ]                     ;
+[()+\-*\/\n^=]          { return yytext[0]; }
+#.*                     ;
+.                       { yyerror("Caracter inválido!"); }
+
+%%

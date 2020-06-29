@@ -1,0 +1,15 @@
+%option main
+%x METADADOS ABC POEMA TITULO
+%%
+
+<*>title:\ \*       BEGIN TITULO;
+<*>\<abc\>          BEGIN ABC;
+<*>\<\/abc\>        BEGIN POEMA;
+<TITULO>\n          BEGIN METADADOS;            
+<METADADOS>\n\n     BEGIN POEMA;    
+<METADADOS>.|\n     {}
+<ABC>.|\n           {}
+<POEMA>_            {}
+<POEMA>\ \ .*       {}
+
+%%

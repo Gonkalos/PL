@@ -1,0 +1,54 @@
+pushi 0 // aqui é a variável i (posição 0)
+
+start
+
+// i = 1
+
+pushi 1
+storeg 0
+
+// while i < 10
+
+iniciowhile:
+pushg 0
+pushi 10
+inf
+jz fim
+
+// escreve "se"
+
+pushs "se "
+writes
+
+// escreve i
+
+pushg 0
+writei
+
+// escreve "elefantes chateia muita gente ..."
+
+pushs " elefantes chateia muita gente ... "
+writes
+
+// i = i + 1
+
+pushg 0
+pushi 1
+add
+storeg 0
+
+// escreve i
+
+pushg 0
+writei
+
+// escreve "incomoda muito mais ..."
+
+pushs " incomoda muito mais\n"
+writes
+
+jump iniciowhile
+
+fim:
+
+stop

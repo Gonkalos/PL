@@ -1,0 +1,14 @@
+Parte 1:
+
+$ make
+$ ./analisadorLexico < exemplo.txt
+
+Parte 2:
+
+Compilação junta (include):
+
+$ make Ex1-inc
+
+Compilação separada:
+
+$ make Ex1-cs

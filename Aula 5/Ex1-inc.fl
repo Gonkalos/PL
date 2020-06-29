@@ -1,0 +1,13 @@
+%option noyywrap yylineno
+%%
+[ \n]               {}
+#.*                 {}
+
+[,]                 { return(yytext[0]); }
+(?i:inicio)         { return(INICIO); }
+(?i:fim)            { return(FIM); }
+[a-zA-Z]+           { return(pal); }
+[0-9]+              { return(num); }
+
+.                   { yyerror("símbolo desconhecido"); }
+%%

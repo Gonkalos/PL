@@ -1,0 +1,2 @@
+interface gráfica -> vms -g filename
+terminal -> vms filename 

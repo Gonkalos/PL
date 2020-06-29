@@ -1,0 +1,27 @@
+pushi 0   // reservar espaço na stack para o a
+pushi 0   // reservar espaço na stack para o b
+
+start
+read      // ler o a
+atoi
+storeg 0  // guardar a na heap
+read      // ler b
+atoi
+storeg 1  // guardar b na heap
+
+// if (a > b)
+pushg 0
+pushg 1
+sup
+jz else	  // jump to else if 0
+
+pushg 0   // push do a
+writei    // escrever o a
+jump fim  // jump to fim
+
+else:
+ pushg 1  // push do b
+ writei   // escrever o b
+
+fim:
+ stop

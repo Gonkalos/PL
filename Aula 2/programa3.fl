@@ -1,0 +1,11 @@
+%%
+
+            char arabe[1000];
+
+::\ .+      printf("PT: %s\nAR: %s\n\n", yytext+2,arabe);
+
+^[^:\n]+    strcpy(arabe,yytext);
+
+.|\n        {;}
+
+%%

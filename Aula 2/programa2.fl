@@ -1,0 +1,9 @@
+%%
+
+::\ .+      printf("PT: %s\n", yytext+2);
+
+^[^:\n]+    printf("AR: %s\n", yytext);
+
+.|\n        {;}
+
+%%

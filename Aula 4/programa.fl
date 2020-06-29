@@ -1,0 +1,16 @@
+%option main
+%x R E
+%%
+
+                    char reporter[200], entrevistado[200];
+R=.*                strcpy(reporter, yytext+2); printf("%s", reporter);
+E=.*                strcpy(entrevistado, yytext+2); printf("%s", entrevistado);
+<*>R:               BEGIN R;  
+<*>E:               BEGIN E;
+<R>[Ee]u            printf("%s (%s)", yytext, reporter);  
+<R>[Tt]u            printf("%s (%s)", yytext, entrevistado);  
+<E>[Ee]u            printf("%s (%s)", yytext, entrevistado); 
+<E>[Tt]u            printf("%s (%s)", yytext, reporter);
+<*>\n               BEGIN 0; printf("\n");
+
+%%
